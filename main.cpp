@@ -203,10 +203,69 @@ public:
     T getAverage() override { return 0; }
 };
 
+/** \brief Student class that represent a student in program.
+ *
+ * Student class implement IPerson and composit Iscore class.
+ * Student is a person and have some scores in his school.
+ * Student class must show us a student information like name and last name and gpa and min and max number in his scores
+ */
+MyTemplate class Student final : public IPerson
+{
+    shared_ptr<IScore<T>> m_score = nullptr;
+
+    Student(const Student &) = default;
+    Student &operator=(const Student &) = default;
+
+public:
+    shared_ptr<IScore<T>> scoreObject() { return m_score; }
+
+    Student(shared_ptr<IScore<T>> score) : m_score(score) {}
+    Student(const string &name, const string &lastName, shared_ptr<IScore<T>> score)
+        : IPerson(name, lastName), m_score(score)
+    {
+    }
+
+    T getAverage() const { return m_score->getAverage(); }
+
+    T max() const { return m_score->max(); }
+
+    T min() const { return m_score->min(); }
+
+    vector<T> getScore() const { return m_score->getScore(); }
+
+    /** We need to cout student and show information.
+     *  So we create overload << operator
+     */
+    friend ostream &operator<<(ostream &os, shared_ptr<Student> s)
+    {
+        os << "Name: " << s->name() << ", LastName: " << s->lastName() << ", Max number: " << s->max()
+           << ", Min Numer: " << s->min() << ", Average: " << s->getAverage();
+        return os;
+    }
+    friend ostream &operator<<(ostream &os, const Student &s)
+    {
+        os << "Name: " << s.name() << ", LastName: " << s.lastName() << ", Max number: " << s.max()
+           << ", Min Numer: " << s.min() << ", Average: " << s.getAverage();
+        return os;
+    }
+
+    /** We need to check if a two student is equal or not
+     *  For know two student is equal or not we check name and last name.
+     */
+    friend bool operator==(shared_ptr<Student> lhs, shared_ptr<Student> rhs)
+    {
+        if (lhs->name() == rhs->name() && lhs->lastName() == rhs->lastName()) return true;
+        return false;
+    }
+    friend bool operator==(const Student &lhs, const Student &rhs)
+    {
+        if (lhs.name() == rhs.name() && lhs.lastName() == rhs.lastName()) return true;
+        return false;
+    }
+};
+
 int main()
 {
-    IScore<int> a;
-
     cout << "Hello World!" << endl;
     return 0;
 }
