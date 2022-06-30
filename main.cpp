@@ -54,7 +54,7 @@ protected:
     vector<T> m_scores; /**< Store all class scores for a student */
 
 public:
-    IScore() {}
+    IScore() = default;
     virtual ~IScore() = default;
 
     virtual T max() const
@@ -106,6 +106,8 @@ public:
 MyTemplate class Grade final : public IScore<T>
 {
 public:
+    Grade() = default;
+
     /** Check when a score added is it valid in Iran gpa system  or not
      */
     void checkScore(T score) const override
@@ -268,8 +270,8 @@ public:
  *
  * Students class store all student exists in program and it manage all students in program.
  * It is reponsibile for add or remove and find student between all students.
- * We work with shared_ptr in this class. So actually when we return or set a shared_ptr we copy from student.
- * So student is not actually student we send to this class or return from this class.
+ * We work with shared_ptr in this class. So actually when we assign('=') a shared_ptr to another sharedptr we copy from
+ * student. So student is not actually student it is copy student.
  */
 MyTemplate class Students final
 {
@@ -319,7 +321,7 @@ public:
     {
         for (const auto &student : students.m_students)
         {
-            os << student;
+            os << student << endl;
         }
         return os;
     }
@@ -327,7 +329,7 @@ public:
     {
         for (const auto &student : students->m_students)
         {
-            os << student;
+            os << student << endl;
         }
         return os;
     }
@@ -335,6 +337,152 @@ public:
 
 int main()
 {
-    cout << "Hello World!" << endl;
+    int state = 0;
+
+    try
+    {
+        Students<double> students;
+
+        cout << "Welcom" << endl;
+        while (state >= 0)
+        {
+            cout << "================" << endl;
+            cout << "Create new student with name and last name and list of scores: Enter number '1'" << endl;
+            cout << "Show all students with they information: Enter number '2'" << endl;
+            cout << "Find student with student name and last name: Enter number '3'" << endl;
+            cout << "Remove student with student name and last name: Enter number '4'" << endl;
+            cout << "For exit press any number expect 1,2,3,4 and return button" << endl;
+            cout << "================" << endl;
+
+            cin >> state;
+
+            if (state == 1)
+            {
+                string name, lastName;
+                double score = 0;
+
+                cout << "We area creating new student." << endl;
+                cout << "Enter student name: " << endl;
+                cin >> name;
+                cout << "Enter student lastName: " << endl;
+                cin >> lastName;
+                cout << "Enter score or enter -1 to finish creating student" << endl;
+
+                cin >> score;
+                shared_ptr<IScore<double>> studentGrade = make_shared<Grade<double>>();
+                while (score >= 0)
+                {
+                    studentGrade->addScore(score);
+                    cin >> score;
+                }
+                shared_ptr<Student<double>> student = make_shared<Student<double>>(studentGrade);
+                student->setName(name);
+                student->setLastName(lastName);
+
+                cout << "You created new student. Student info: " << endl;
+                cout << student << endl;
+
+                students.addStudent(student);
+
+                cout << "List: " << endl;
+                cout << students << endl;
+            }
+
+            else if (state == 2)
+            {
+                cout << "All students: " << endl;
+                cout << students << endl;
+            }
+
+            else if (state == 3)
+            {
+                string name, lastName;
+                cout << "Searcing for specific student." << endl;
+                cout << "Enter student name: " << endl;
+                cin >> name;
+                cout << "Enter student lastName: " << endl;
+                cin >> lastName;
+
+                shared_ptr<IScore<double>> nullGrade = make_shared<NullGrade<double>>();
+                shared_ptr<Student<double>> student = make_shared<Student<double>>(nullGrade);
+                student->setName(name);
+                student->setLastName(lastName);
+
+                shared_ptr<Student<double>> s = students.findStudent(student);
+                if (s)
+                {
+                    int showInfoState = 0;
+                    cout << "Print student all information. Enter number '1': " << endl;
+                    cout << "Print student grade information. Enter number '2': " << endl;
+                    cout << "Print student show max and min information. Enter number '3': " << endl;
+                    cout << "Print student GPA information. Enter number '4': " << endl;
+                    cin >> showInfoState;
+                    if (showInfoState == 1)
+                    {
+                        cout << s << endl;
+                    }
+                    if (showInfoState == 2)
+                    {
+                        cout << s->getAverage() << endl;
+                    }
+                    if (showInfoState == 3)
+                    {
+                        cout << "max: " << s->max() << ", min:" << s->min() << endl;
+                    }
+
+                    if (showInfoState == 4)
+                    {
+                        shared_ptr<IranGradeToGPAAdapter<double>> gpa =
+                            make_shared<IranGradeToGPAAdapter<double>>(s->scoreObject());
+                        cout << "gpa is: " << gpa->getAverage() << endl;
+                    }
+                }
+                else
+                {
+                    cout << "Could not find student. check name and lastName" << endl;
+                }
+            }
+
+            else if (state == 4)
+            {
+                string name, lastName;
+                cout << "Deleting specific student." << endl;
+                cout << "Enter student name: " << endl;
+                cin >> name;
+                cout << "Enter student lastName: ";
+                cin >> lastName;
+
+                shared_ptr<IScore<double>> nullGrade = make_shared<NullGrade<double>>();
+                shared_ptr<Student<double>> student = make_shared<Student<double>>(nullGrade);
+                student->setName(name);
+                student->setLastName(lastName);
+
+                auto s = students.removeStudent(student);
+                if (s)
+                {
+                    cout << "We deleted student: " << s << endl;
+                    cout << "List is: " << endl;
+                    cout << students << endl;
+                }
+                else
+                {
+                    cout << "Could not find student. check name and lastName" << endl;
+                }
+            }
+
+            else
+            {
+                cout << "================" << endl;
+                cout << "Good by" << endl;
+                cout << "================" << endl;
+                break;
+            }
+        }
+    }
+    catch (const exception &x)
+    {
+        cout << "some thing gone wrong. error message: " << x.what() << endl;
+    }
+
     return 0;
 }
