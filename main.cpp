@@ -234,7 +234,7 @@ public:
     vector<T> getScore() const { return m_score->getScore(); }
 
     /** We need to cout student and show information.
-     *  So we create overload << operator
+     *  So we overload << operator
      */
     friend ostream &operator<<(ostream &os, shared_ptr<Student> s)
     {
@@ -261,6 +261,75 @@ public:
     {
         if (lhs.name() == rhs.name() && lhs.lastName() == rhs.lastName()) return true;
         return false;
+    }
+};
+
+/** \brief Students class that store all students in program
+ *
+ * Students class store all student exists in program and it manage all students in program.
+ * It is reponsibile for add or remove and find student between all students.
+ * We work with shared_ptr in this class. So actually when we return or set a shared_ptr we copy from student.
+ * So student is not actually student we send to this class or return from this class.
+ */
+MyTemplate class Students final
+{
+    vector<shared_ptr<Student<T>>> m_students; /**< Store all students */
+
+    Students(const Students &) = default;
+    Students &operator=(const Students &) = default;
+
+public:
+    Students() = default;
+
+    void addStudent(shared_ptr<Student<T>> student) { m_students.push_back(student); }
+
+    /** Remove student from student list
+     *  Search in student list to find specific student and remove from list and return that student
+     */
+    shared_ptr<Student<T>> removeStudent(shared_ptr<Student<T>> student)
+    {
+        for (size_t i = 0; i < m_students.size(); i++)
+        {
+            if (student == m_students[i])
+            {
+                auto temp = m_students[i];
+                m_students.erase(m_students.begin() + i);
+                return temp;
+            }
+        }
+
+        return nullptr;
+    }
+
+    /** find student from student list
+     *  Search in student list to find specific student and return that student.
+     *  We return share_ptr so actually we get copy from that. Attention to this point
+     */
+    shared_ptr<Student<T>> findStudent(shared_ptr<Student<T>> student)
+    {
+        for (const auto &s : m_students)
+            if (s == student) return s;
+        return nullptr;
+    }
+
+    /** We need to cout students list and show information.
+     *  So we overload << operator
+     */
+    friend ostream &operator<<(ostream &os, const Students &students)
+    {
+        for (const auto &student : students.m_students)
+        {
+            os << student;
+        }
+        return os;
+    }
+    friend ostream &operator<<(ostream &os, shared_ptr<Students> students)
+    {
+        for (const auto &student : students->m_students)
+        {
+            os << student;
+        }
+        return os;
     }
 };
 
